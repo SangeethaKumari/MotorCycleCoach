@@ -126,29 +126,83 @@ async def chat(request_body: ChatRequest, token: str = Depends(verify_token)):
                     if part.text:
                         full_response_text += part.text
         
-        # Extract Quiz Data if present
+        # Utility to extract blocks without Regex hangs
+        def extract_block(text, tag):
+            start_tag = f"[{tag}]"
+            end_tag = f"[/{tag}]"
+            if start_tag in text and end_tag in text:
+                parts = text.split(start_tag, 1)
+                before = parts[0]
+                after_parts = parts[1].split(end_tag, 1)
+                block_content = after_parts[0].strip()
+                remaining_text = before + (after_parts[1] if len(after_parts) > 1 else "")
+                return block_content, remaining_text.strip()
+            return None, text
+
+        # Extract Quiz
+        quiz_json_str, full_response_text = extract_block(full_response_text, "QUIZ")
         quiz_data = None
-        import re
-        import json
-        quiz_match = re.search(r'\[QUIZ\]\s*(.*?)\s*\[/QUIZ\]', full_response_text, re.DOTALL)
-        if quiz_match:
+        if quiz_json_str:
             try:
-                quiz_json_str = quiz_match.group(1).strip()
+                import json
                 quiz_data = json.loads(quiz_json_str)
                 # FORCE THE CATEGORY FROM OUR HARD CLASSIFIER
                 detected_category = classify_query(message)
-                logger.info(f"📊 [BACKEND] Classifier results: {detected_category}")
                 quiz_data["category"] = detected_category
-                # Remove the quiz block from the text response
-                full_response_text = re.sub(r'\[QUIZ\].*?\[/QUIZ\]', '', full_response_text, flags=re.DOTALL).strip()
-            except Exception as parse_err:
-                logger.warning(f"Failed to parse quiz JSON: {parse_err}")
+            except Exception as e:
+                logger.warning(f"Quiz parse error: {e}")
+
+        # Extract Telemetry
+        telemetry_json_str, full_response_text = extract_block(full_response_text, "TELEMETRY")
+        telemetry_data = None
+        if telemetry_json_str:
+            try:
+                import json
+                telemetry_data = json.loads(telemetry_json_str)
+            except Exception as e:
+                logger.warning(f"Telemetry parse error: {e}")
         
+        # Extract Video Demo
+        video_json_str, full_response_text = extract_block(full_response_text, "VIDEO_DEMO")
+        video_data = None
+        if video_json_str:
+            try:
+                import json
+                video_data = json.loads(video_json_str)
+            except Exception as e:
+                logger.warning(f"Video Demo parse error: {e}")
+
+        # Extract Masterclass (Unified Video + Quiz)
+        mc_json_str, full_response_text = extract_block(full_response_text, "MASTERCLASS")
+        if mc_json_str:
+            try:
+                import json
+                mc_data = json.loads(mc_json_str)
+                v_type = mc_data.get("videoType") or mc_data.get("type")
+                video_data = {"type": v_type, "title": mc_data.get("title")}
+                # Handle legacy or nested quiz
+                quiz_data = {"category": mc_data.get("title"), "questions": mc_data.get("quiz")}
+            except Exception as e:
+                logger.warning(f"Masterclass parse error: {e}")
+        
+        # FINAL SAFETY: If the agent only sent blocks and no text, provide a fallback
+        if not full_response_text.strip():
+            if video_data:
+                full_response_text = f"Here is the interactive masterclass on {video_data.get('title', 'technique')}."
+            elif quiz_data:
+                full_response_text = "I've prepared a challenge for you based on our discussion."
+            elif telemetry_data:
+                full_response_text = "I've analyzed your telemetry data. Check the visual card below for details."
+            else:
+                full_response_text = "No response from agent"
+
         sources = get_last_sources()
         return {
-            "response": full_response_text or "No response from agent",
+            "response": full_response_text.strip(),
             "sources": sources,
-            "quiz": quiz_data
+            "quiz": quiz_data,
+            "telemetry": telemetry_data,
+            "videoAnalysis": video_data
         }
     except Exception as e:
         logger.error(f"Chat Error: {e}")

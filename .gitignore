@@ -51,3 +51,10 @@ Thumbs.db
 backend/src/coachagent/knowledge/
 tmp/
 qdrant_db/
+
+# Media Assets
+*.mp4
+*.mov
+*.avi
+*.mkv
+frontend/public/videos/

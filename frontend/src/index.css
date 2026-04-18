@@ -332,8 +332,7 @@ body {
 
 .input-area {
   padding: 30px 20px;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(20px);
+  background: #0f172a;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: center;
@@ -469,8 +468,35 @@ body {
   gap: 8px;
 }
 
-.quiz-question-item {
+.quiz-scroll-area {
+  max-height: 450px;
+  overflow-y: auto;
+  padding-right: 12px;
   margin-bottom: 24px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) rgba(255, 255, 255, 0.05);
+}
+
+.quiz-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.quiz-scroll-area::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.quiz-scroll-area::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 3px;
+}
+
+.quiz-question-item {
+  margin-bottom: 32px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .quiz-q-text {
@@ -620,11 +646,10 @@ body {
   top: 80px;
   right: 20px;
   width: 260px;
-  background: rgba(15, 15, 15, 0.85);
+  background: #111;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 20px;
-  backdrop-filter: blur(15px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   z-index: 1000;
   max-height: calc(100vh - 120px);
@@ -705,4 +730,268 @@ body {
   .sidebar {
     display: none;
   }
+}
+
+/* Telemetry Visualization */
+.telemetry-card {
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 15px 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  border-left: 4px solid var(--accent);
+}
+
+.danger-pulse-static {
+  border-color: #ff453a;
+  box-shadow: 0 0 15px rgba(255, 69, 58, 0.3);
+}
+
+/* Video Analysis Dashboard */
+.video-coach-container {
+  background: #1e293b;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 20px 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.video-header {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.live-tag {
+  background: #ff453a;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.1em;
+  animation: dangerPulse 2s infinite ease-in-out;
+}
+
+.step-title {
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.video-main {
+  display: flex;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.video-player-wrapper {
+  flex: 3;
+  background: black;
+  display: flex;
+  align-items: center;
+}
+
+.video-player-wrapper video {
+  width: 100%;
+  max-height: 400px;
+}
+
+.telemetry-aside {
+  flex: 1.2;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.mini-gauge {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+}
+
+.mini-gauge .label {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  font-weight: 800;
+}
+
+.mini-gauge .val {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: white;
+}
+
+.status-box {
+  margin-top: auto;
+  padding: 12px;
+  background: rgba(26, 115, 232, 0.1);
+  border-radius: 8px;
+}
+
+.status-text {
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.coach-advice-card {
+  padding: 15px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.personal-tag {
+  background: #ffcc00;
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.personal-review {
+  border-left: 4px solid #ffcc00;
+}
+
+@keyframes dangerPulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+
+.telemetry-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.metric-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.metric-value {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: white;
+  line-height: 1;
+}
+
+.metric-value small {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  margin-left: 4px;
+}
+
+.gauge-container {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 5px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gauge-fill {
+  height: 100%;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(255, 107, 0, 0.3);
+}
+
+/* Sparkline Timeline */
+.sparkline-container {
+  margin-top: 24px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.sparkline-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  margin-bottom: 15px;
+  letter-spacing: 0.05em;
+}
+
+.sparkline {
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 4px;
+  position: relative;
+}
+
+.spark-bar {
+  flex: 1;
+  background: rgba(26, 115, 232, 0.15);
+  border-radius: 2px 2px 0 0;
+  position: relative;
+  min-width: 6px;
+  transition: height 0.3s ease;
+}
+
+.lean-dot {
+  position: absolute;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 0 10px var(--accent-glow);
+  z-index: 2;
+}
+
+.telemetry-alert {
+  margin-top: 20px;
+  background: rgba(255, 69, 58, 0.1);
+  border-left: 4px solid #ff453a;
+  padding: 12px 18px;
+  border-radius: 8px;
+  color: #ff453a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  animation: slideIn 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
 }

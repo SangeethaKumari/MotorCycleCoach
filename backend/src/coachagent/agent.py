@@ -1,6 +1,7 @@
 import os
 from google.adk.agents.llm_agent import Agent
 from coachagent.rag import search_handbook
+from coachagent.telemetry_advisor import analyze_telemetry, advance_ride
 
 # Load system prompt from file
 prompt_path = os.path.join(os.path.dirname(__file__), "../../motorcycle_coach_prompt.txt")
@@ -14,5 +15,5 @@ root_agent = Agent(
     name='motorcycle_coach',
     description='An expert motorcycle coach helping riders with technique, gear, and maintenance.',
     instruction=system_instruction,
-    tools=[search_handbook]
+    tools=[search_handbook, analyze_telemetry, advance_ride]
 )
