@@ -6,6 +6,19 @@ import "./index.css";
 const API_BASE = "http://localhost:8000";
 const AUTH_TOKEN = "your-secret-token";
 
+const CURRICULUM = [
+    { name: "License & Legal Requirements", icon: "🪪" },
+    { name: "Preparing to Ride", icon: "🧤" },
+    { name: "Basic Vehicle Control", icon: "🕹️" },
+    { name: "Space Cushion", icon: "🛡️" },
+    { name: "SEE Strategy", icon: "👁️" },
+    { name: "Collision Avoidance & Emergencies", icon: "🚨" },
+    { name: "Handling Dangerous Surfaces", icon: "⛈️" },
+    { name: "Passengers & Cargo", icon: "🎒" },
+    { name: "Group Riding", icon: "🏍️🏍️" },
+    { name: "Rider State & Safety", icon: "🧠" }
+];
+
 export default function App() {
     const [messages, setMessages] = useState([
         { role: "agent", text: "Welcome to MotorCycleCoach! I'm here to help you master the road. What's on your mind today?" }
@@ -14,15 +27,39 @@ export default function App() {
     const [loading, setLoading] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [isSpeaking, setIsSpeaking] = useState(false);
+    const [performance, setPerformance] = useState({});
     
     const chatEndRef = useRef(null);
     const mediaRecorder = useRef(null);
     const audioChunks = useRef([]);
 
+    useEffect(() => {
+        const savedPerf = localStorage.getItem("mtc_performance");
+        if (savedPerf) setPerformance(JSON.parse(savedPerf));
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem("mtc_performance", JSON.stringify(performance));
+    }, [performance]);
+
     // Auto scroll to bottom
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, loading]);
+
+    const updatePerformance = (category, correct, total) => {
+        const catName = category || "General";
+        setPerformance(prev => {
+            const current = prev[catName] || { correct: 0, total: 0 };
+            return {
+                ...prev,
+                [catName]: {
+                    correct: current.correct + correct,
+                    total: current.total + total
+                }
+            };
+        });
+    };
 
     const sendMessage = async (textOverride) => {
         const text = textOverride || input;
@@ -54,9 +91,6 @@ export default function App() {
                 sources: sources,
                 quiz: quiz
             }]);
-
-            // Optional: Speak back if needed (TBD if user wants auto-speak)
-            // speak(agentText);
 
         } catch (error) {
             setMessages(prev => [...prev, {
@@ -127,7 +161,6 @@ export default function App() {
     };
 
     const speak = (text) => {
-        // Cancel any current speech
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text.replace(/[#*`]/g, ''));
         utterance.onstart = () => setIsSpeaking(true);
@@ -162,93 +195,148 @@ export default function App() {
                 </div>
             </header>
 
-            <main className="chat-window">
-                {messages.map((msg, i) => (
-                    <div key={i} className={`message ${msg.role}`}>
-                        <div className="label">{msg.role === "user" ? "Rider" : "Coach"}</div>
-                        <div className="markdown-content">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {msg.text}
-                            </ReactMarkdown>
-                        </div>
-                        
-                        {msg.role === "agent" && msg.quiz && <Quiz quiz={msg.quiz} />}
-                        
-                        {msg.role === "agent" && msg.sources && msg.sources.length > 0 && (
-                            <div className="sources-container">
-                                <div className="sources-label">HANDBOOK SOURCES:</div>
-                                <div className="sources-list">
-                                    {[...new Set(msg.sources.map(s => `${s.source} (Page ${s.page})`))].map((sourceStr, idx) => (
-                                        <div key={idx} className="source-badge">
-                                            📖 {sourceStr}
+            <div className="main-layout">
+                <Sidebar curriculum={CURRICULUM} performance={performance} />
+                
+                <div className="content-area">
+                    <main className="chat-window">
+                        <div className="chat-container">
+                            {messages.map((msg, i) => (
+                                <div key={i} className={`message ${msg.role}`}>
+                                    <div className="label">{msg.role === "user" ? "Rider" : "Coach"}</div>
+                                    <div className="markdown-content">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {msg.text}
+                                        </ReactMarkdown>
+                                    </div>
+                                    
+                                    {msg.role === "agent" && msg.quiz && (
+                                        <Quiz 
+                                            quiz={msg.quiz} 
+                                            onResult={(correct, total) => updatePerformance(msg.quiz.category, correct, total)} 
+                                        />
+                                    )}
+                                    
+                                    {msg.role === "agent" && msg.sources && msg.sources.length > 0 && (
+                                        <div className="sources-container">
+                                            <div className="sources-label">HANDBOOK SOURCES:</div>
+                                            <div className="sources-list">
+                                                {[...new Set(msg.sources.map(s => `${s.source} (Page ${s.page})`))].map((sourceStr, idx) => (
+                                                    <div key={idx} className="source-badge">
+                                                        📖 {sourceStr}
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    ))}
+                                    )}
+                                    {msg.role === "agent" && (
+                                        <button 
+                                            onClick={() => speak(msg.text)} 
+                                            className="speak-btn"
+                                        >
+                                            🔊 Hear advice
+                                        </button>
+                                    )}
                                 </div>
-                            </div>
-                        )}
-                        {msg.role === "agent" && (
-                            <button 
-                                onClick={() => speak(msg.text)} 
-                                className="speak-btn"
-                            >
-                                🔊 Hear advice
-                            </button>
-                        )}
-                    </div>
-                ))}
-                {loading && (
-                    <div className="message agent">
-                        <div className="label">Coach</div>
-                        <div className="typing-indicator">
-                            <div className="dot"></div>
-                            <div className="dot"></div>
-                            <div className="dot"></div>
+                            ))}
+                            {loading && (
+                                <div className="message agent">
+                                    <div className="label">Coach</div>
+                                    <div className="typing-indicator">
+                                        <div className="dot"></div>
+                                        <div className="dot"></div>
+                                        <div className="dot"></div>
+                                    </div>
+                                </div>
+                            )}
+                            <div ref={chatEndRef} />
                         </div>
-                    </div>
-                )}
-                <div ref={chatEndRef} />
-            </main>
+                    </main>
 
-            <footer className="input-area">
-                <div className="input-row">
-                    <button
-                        className={`mic-btn ${isRecording ? 'recording' : ''}`}
-                        onClick={isRecording ? stopRecording : startRecording}
-                        disabled={loading}
-                        title={isRecording ? "Stop Recording" : "Voice Input"}
-                    >
-                        {isRecording ? "🛑" : "🎤"}
-                    </button>
-                    
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={e => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Ask about technique, gear, or maintenance..."
-                        disabled={loading || isRecording}
-                    />
-                    
-                    <button 
-                        className="send-btn" 
-                        onClick={() => sendMessage()} 
-                        disabled={loading || isRecording || !input.trim()}
-                    >
-                        {loading ? "..." : "SEND"}
-                    </button>
+                    <footer className="input-area">
+                        <div className="input-row">
+                            <button
+                                className={`mic-btn ${isRecording ? 'recording' : ''}`}
+                                onClick={isRecording ? stopRecording : startRecording}
+                                disabled={loading}
+                                title={isRecording ? "Stop Recording" : "Voice Input"}
+                            >
+                                {isRecording ? "🛑" : "🎤"}
+                            </button>
+                            
+                            <input
+                                type="text"
+                                value={input}
+                                onChange={e => setInput(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Ask about technique, gear, or maintenance..."
+                                disabled={loading || isRecording}
+                            />
+                            
+                            <button 
+                                className="send-btn" 
+                                onClick={() => sendMessage()} 
+                                disabled={loading || isRecording || !input.trim()}
+                            >
+                                {loading ? "..." : "SEND"}
+                            </button>
+                        </div>
+                    </footer>
                 </div>
-            </footer>
+            </div>
         </div>
     );
 }
 
-function Quiz({ quiz }) {
+function Sidebar({ curriculum, performance }) {
+    const TARGET_QUESTIONS = 50;
+
+    return (
+        <aside className="sidebar">
+            <div className="sidebar-header">
+                <h3>LEARNING PATH</h3>
+                <p>Goal: 50 Questions per Topic</p>
+            </div>
+            <nav className="category-list">
+                {curriculum.map((cat, i) => {
+                    const stats = performance[cat.name] || { correct: 0, total: 0 };
+                    const percent = Math.min(Math.round((stats.correct / TARGET_QUESTIONS) * 100), 100);
+                    const isFocus = stats.total > 0 && (stats.correct / stats.total) < 0.7;
+
+                    return (
+                        <div key={i} className={`category-item ${isFocus ? 'focus-needed' : stats.total > 0 ? 'active' : ''}`}>
+                            <div className="cat-icon">{cat.icon}</div>
+                            <div className="cat-info">
+                                <div className="cat-name">{cat.name}</div>
+                                <div className="cat-progress-bg">
+                                    <div className="cat-progress-fill" style={{ width: `${percent}%` }}></div>
+                                </div>
+                                <div className="cat-meta">
+                                    <span>{percent}% Mastery</span>
+                                    <span>{stats.correct}/{TARGET_QUESTIONS}</span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </nav>
+        </aside>
+    );
+}
+
+function Quiz({ quiz, onResult }) {
     const [selectedAnswers, setSelectedAnswers] = useState({});
     const [submitted, setSubmitted] = useState(false);
 
     if (!quiz || !quiz.questions) return null;
 
-    const handleSubmit = () => setSubmitted(true);
+    const handleSubmit = () => {
+        setSubmitted(true);
+        const correctCount = quiz.questions.reduce((acc, q) => {
+            return acc + (selectedAnswers[q.id] === q.correct ? 1 : 0);
+        }, 0);
+        if (onResult) onResult(correctCount, quiz.questions.length);
+    };
 
     return (
         <div className="quiz-card">
@@ -297,3 +385,5 @@ function Quiz({ quiz }) {
         </div>
     );
 }
+
+

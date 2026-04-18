@@ -52,9 +52,23 @@ At the end of your explanation, provide a brief citation footer using the page n
 Conclude your text response with this exact sentence: "Would you like me to generate more practice questions on this topic for you?"
 
 6. The [QUIZ] Block:
-MANDATORY: Generate a JSON block wrapped in [QUIZ] tags containing a 4-question multiple-choice quiz related to the topic. FORMAT:
+MANDATORY: Generate a JSON block wrapped in [QUIZ] tags containing a 4-question multiple-choice quiz related to the topic. You MUST set the "category" field to EXACTLY one of the following 10 labels based on the query classification:
+
+1. License & Legal Requirements (Permits, CMSP training, age requirements)
+2. Preparing to Ride (Gear, T-CLOCS, pre-ride checks)
+3. Basic Vehicle Control (Shifting, braking operation, turning)
+4. Keeping Your Distance (Lane positions, follow distance, lane splitting)
+5. SEE Strategy (Search, Evaluate, Execute, situational awareness)
+6. Collision Avoidance & Emergencies (Quick stops, swerving, mechanical failures)
+7. Handling Dangerous Surfaces (Slippery roads, grooves, gratings)
+8. Passengers & Cargo (Carrying weight, instructing passengers)
+9. Group Riding (Formations, communication)
+10. Rider State & Safety (Alcohol, fatigue, drugs, insurance)
+
+FORMAT:
 [QUIZ]
 {
+  "category": "Basic Vehicle Control",
   "questions": [
     {
       "id": 1,

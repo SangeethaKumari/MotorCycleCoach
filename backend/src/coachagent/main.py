@@ -20,6 +20,7 @@ from google.genai import types
 # Import our root agent
 from coachagent.agent import root_agent
 from coachagent.rag import get_last_sources
+from coachagent.classifier import classify_query
 
 load_dotenv()
 
@@ -134,6 +135,10 @@ async def chat(request_body: ChatRequest, token: str = Depends(verify_token)):
             try:
                 quiz_json_str = quiz_match.group(1).strip()
                 quiz_data = json.loads(quiz_json_str)
+                # FORCE THE CATEGORY FROM OUR HARD CLASSIFIER
+                detected_category = classify_query(message)
+                logger.info(f"📊 [BACKEND] Classifier results: {detected_category}")
+                quiz_data["category"] = detected_category
                 # Remove the quiz block from the text response
                 full_response_text = re.sub(r'\[QUIZ\].*?\[/QUIZ\]', '', full_response_text, flags=re.DOTALL).strip()
             except Exception as parse_err:
