@@ -879,6 +879,7 @@ body {
 .telemetry-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 0.8rem;
   font-weight: 900;
   color: var(--accent);
@@ -886,6 +887,16 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   padding-bottom: 12px;
   margin-bottom: 20px;
+}
+
+.source-tag {
+  font-size: 0.6rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .metrics-grid {

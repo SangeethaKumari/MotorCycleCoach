@@ -65,7 +65,8 @@ class TelemetryAdvisor:
             "current_speed": round(float(last_row.get('Speed (m/s)', 0)) * 3.6, 1),
             "is_dangerous": bool(is_braking_mid_corner or label_code in ['DA', 'AA']),
             "alerts": [],
-            "history": history
+            "history": history,
+            "data_source": "Kaggle Motorcycle Dataset"
         }
         
         if is_braking_mid_corner:

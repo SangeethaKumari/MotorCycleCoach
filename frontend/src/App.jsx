@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import "./index.css";
-import { CORNERING_STEPS, CLUTCH_MISTAKE_STEPS, THROTTLE_STEPS, SPEED_ANALYSIS_STEPS } from "./VideoMetadata";
+import { CORNERING_STEPS, CLUTCH_MISTAKE_STEPS, THROTTLE_STEPS, SPEED_ANALYSIS_STEPS, FOOT_PLACEMENT_STEPS, LANE_PLACEMENT_STEPS, ANATOMY_PARTS_STEPS } from "./VideoMetadata";
 
 const API_BASE = "http://localhost:8000";
 const AUTH_TOKEN = "your-secret-token";
@@ -244,7 +244,15 @@ export default function App() {
                                     )}
                                     
                                     {msg.role === "agent" && msg.telemetry && (
-                                        <TelemetryViz data={msg.telemetry} />
+                                        <div className="telemetry-card animate-slide-up">
+                                            <div className="card-header">
+                                                <h3>Performance Analysis</h3>
+                                                <span className="source-badge">KAGGLE DATASET</span>
+                                            </div>
+                                            <div className="telemetry-grid">
+                                                <TelemetryViz data={msg.telemetry} />
+                                            </div>
+                                        </div>
                                     )}
 
                                     {msg.role === "agent" && msg.videoAnalysis && (
@@ -377,6 +385,18 @@ function VideoCoach({ type }) {
         steps = SPEED_ANALYSIS_STEPS;
         url = "/videos/realvideo_kids.mp4";
         label = "PACE CONSISTENCY";
+    } else if (lessonType === "footwork") {
+        steps = FOOT_PLACEMENT_STEPS;
+        url = "/videos/foot_placement.mp4";
+        label = "CONTROL READINESS";
+    } else if (lessonType === "traffic") {
+        steps = LANE_PLACEMENT_STEPS;
+        url = "/videos/lane_placement.mp4";
+        label = "SITUATIONAL SCANNING";
+    } else if (lessonType === "anatomy") {
+        steps = ANATOMY_PARTS_STEPS;
+        url = "/videos/motorcycle_parts.mp4";
+        label = "PART IDENTIFICATION";
     } else {
         steps = CORNERING_STEPS;
         url = "/videos/cornering_mastery.mp4";
@@ -433,9 +453,12 @@ function VideoCoach({ type }) {
                              <div className="gauge-fill" style={{ width: `${metricPercent}%`, background: metricValue > 1.0 ? '#ff453a' : 'var(--accent)' }}></div>
                         </div>
                         <div className="val">
-                            {type === "clutch" ? "FRICTION ZONE" : 
-                             type === "throttle" ? "SMOOTH ROLL" : 
-                             type === "speed" ? "TARGET PARE" :
+                            {lessonType === "clutch" ? "FRICTION ZONE" : 
+                             lessonType === "throttle" ? "SMOOTH ROLL" : 
+                             lessonType === "speed" ? "TARGET PARE" :
+                             lessonType === "footwork" ? "NEUTRAL LOCK" :
+                             lessonType === "traffic" ? "VISIBILITY SCORE" :
+                             lessonType === "anatomy" ? "CONTROL MASTERY" :
                              `${safeValue} rad`}
                         </div>
                     </div>
@@ -463,13 +486,14 @@ function TelemetryViz({ data }) {
     if (!data || !data.history) return null;
 
     const maxLean = Math.abs(Number(data.max_lean) || 0);
-    const leanPercent = Math.min((max_lean / 2.0) * 100, 100);
+    const leanPercent = Math.min((maxLean / 2.0) * 100, 100);
     const currentSpeed = Number(data.current_speed) || 0;
 
     return (
         <div className={`telemetry-card ${data.is_dangerous ? 'danger-pulse' : ''}`}>
             <div className="telemetry-header">
                 <span>📊 RIDE DYNAMICS ANALYSIS</span>
+                <span className="source-tag">KAGGLE DATASET</span>
                 <span className="timestamp">T+{data.timestamp || 0}s</span>
             </div>
             
@@ -478,7 +502,7 @@ function TelemetryViz({ data }) {
                     <div className="metric-label">PEAK LEAN</div>
                     <div className="gauge-container">
                         <div className="gauge-track"></div>
-                        <div className="gauge-fill" style={{ width: `${leanPercent}%`, background: max_lean > 1.2 ? '#ff453a' : 'var(--accent)' }}></div>
+                        <div className="gauge-fill" style={{ width: `${leanPercent}%`, background: maxLean > 1.2 ? '#ff453a' : 'var(--accent)' }}></div>
                     </div>
                     <div className="metric-value">{maxLean.toFixed(3)} <small>rad</small></div>
                 </div>
@@ -490,7 +514,7 @@ function TelemetryViz({ data }) {
             </div>
 
             <div className="sparkline-container">
-                <div className="sparkline-label">PHYSICS TIMELINE (SPEED & LEAN)</div>
+                <div className="sparkline-label">PHYSICS TIMELINE (KAGGLE DATA)</div>
                 <div className="sparkline">
                     {(data.history || []).map((h, i) => {
                         const s = Number(h.speed) || 0;

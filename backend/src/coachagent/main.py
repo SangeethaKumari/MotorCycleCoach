@@ -24,6 +24,12 @@ from coachagent.classifier import classify_query
 
 load_dotenv()
 
+# ── Runner Init (Persistent) ──────────────────────────
+# We initialize the runner here so it maintains context/sessions
+# across multiple API requests.
+runner = InMemoryRunner(agent=root_agent)
+runner.auto_create_session = True
+
 # ── Logging ───────────────────────────────────────────
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -114,8 +120,6 @@ async def chat(request_body: ChatRequest, token: str = Depends(verify_token)):
         raise HTTPException(status_code=400, detail="No message or prompt provided")
     
     try:
-        runner = InMemoryRunner(agent=root_agent)
-        runner.auto_create_session = True
         new_message = types.Content(role="user", parts=[types.Part(text=message)])
         events = runner.run(user_id=request_body.user_id, session_id=request_body.session_id, new_message=new_message)
         
