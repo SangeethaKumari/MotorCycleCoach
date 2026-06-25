@@ -93,7 +93,7 @@ graph TD
 
 ### 1. Main Chat & RAG Flow (Text Query)
 
-This flow illustrates what happens when a user types a question in the chat interface.
+This flow illustrates how the system handles text queries, specifically highlighting how the agent evaluates user intent between basic identification/anatomy (e.g. *"What is throttle?"*) and hands-on skill learning (e.g. *"Teach me throttle technique"*):
 
 ```mermaid
 sequenceDiagram
@@ -105,21 +105,36 @@ sequenceDiagram
     participant Tool as RAG Tool (rag.py)
     participant DB as Qdrant (Docker)
 
-    User->>Frontend: Types "How to carry a passenger?"
+    User->>Frontend: Types query ("What is throttle" OR "Teach me throttle")
     Frontend->>Backend: POST /chat {prompt: "..."}
     Backend->>Classifier: classify_query(prompt)
-    Classifier-->>Backend: Returns Category (e.g. "Passengers & Cargo")
+    Classifier-->>Backend: Returns Category (e.g. "Basic Vehicle Control")
     Backend->>Agent: runner.run(agent, prompt)
-    Agent->>Agent: Reasoning (Gemini 2.5 Flash)
-    Agent->>Tool: search_handbook("carrying passengers")
-    Tool->>DB: Similarity Search (Vector Match)
-    DB-->>Tool: Relevant Handbook Snippets
-    Tool-->>Agent: Formatted Context
-    Agent->>Agent: Generate Final Response (injecting [QUIZ], [TELEMETRY], etc.)
-    Agent-->>Backend: Response String containing blocks
-    Backend->>Backend: Extract tags/blocks (Quiz, Telemetry, Video)
-    Backend-->>Frontend: JSON response containing text, sources, quiz, telemetry, videoAnalysis
-    Frontend-->>User: Render chat bubbles, charts, and interactive learning cards
+    
+    alt Intent: "What is throttle" (Anatomy Lookup)
+        Agent->>Agent: Identify 'anatomy' intent & locate Right Handlebar illustration path
+        Agent->>Tool: search_handbook("throttle location / basic controls")
+        Tool->>DB: Similarity Search
+        DB-->>Tool: Basic Handbook Page Snippets
+        Tool-->>Agent: Returns text context
+        Agent->>Agent: Generate response with Right Handlebar GIF path & Definition
+    else Intent: "Teach me throttle" (Technique Masterclass)
+        Agent->>Tool: search_handbook("throttle roll-on technique, wrist position")
+        Tool->>DB: Similarity Search
+        DB-->>Tool: Technical Handbook Snippets
+        Tool-->>Agent: Returns text context
+        Agent->>Agent: Generate response with [MASTERCLASS] JSON block (type: "throttle")
+    end
+
+    Agent-->>Backend: Final response string containing tags
+    Backend->>Backend: Extract blocks (Anatomy Image path vs. [MASTERCLASS] JSON)
+    Backend-->>Frontend: JSON response { response, videoAnalysis, quiz }
+    
+    alt Render: Anatomy Question
+        Frontend-->>User: Display Right Handlebar Control GIF + definition table + text
+    else Render: Masterclass Question
+        Frontend-->>User: Load interactive VideoPlayer with throttle_technique.mp4 + synchronized telemetry
+    end
 ```
 
 ### 2. Voice Input & Transcription Flow
@@ -165,6 +180,43 @@ sequenceDiagram
         UI->>UI: Update Status box (e.g. "Rolling Throttle (Good)")
         UI->>UI: Update Coach advice panel text
     end
+```
+
+### 4. Ride Telemetry Analysis Flow
+
+This sequence flow describes the initialization, sliding-window calculations, safety anomaly checks, and simulated data advancement within the telemetry evaluation module:
+
+```mermaid
+sequenceDiagram
+    participant Agent as ADK Root Agent (agent.py)
+    participant Advisor as Telemetry Advisor (telemetry_advisor.py)
+    participant DB as CSV File (reckless_rider_dataset.csv)
+
+    Note over Agent, Advisor: 1. Initialization (Singleton Setup)
+    Agent->>Advisor: get_advisor() / analyze_telemetry()
+    alt Advisor Instance not created yet
+        Advisor->>DB: pd.read_csv("data/reckless_rider_dataset.csv")
+        DB-->>Advisor: Load dataframe (df)
+    end
+
+    Note over Agent, Advisor: 2. Analysis Retrieval
+    Advisor->>Advisor: Identify CURRENT_INDEX (e.g. 500)
+    Advisor->>Advisor: Slice sliding window [index-20 : index]
+    
+    Note over Advisor: 3. Physics & Safety Assessment
+    Advisor->>Advisor: Convert Speed (m/s -> km/h)
+    Advisor->>Advisor: Calculate max lean angle (gyroscope y)
+    Advisor->>Advisor: Check label_code (e.g., DA, AA)
+    opt Danger Detected (e.g. Deceleration & Lean > 1.2 rad)
+        Advisor->>Advisor: Append safety alerts (e.g. Aggressive Braking)
+    end
+
+    Advisor-->>Agent: Returns JSON-formatted analysis context
+
+    Note over Agent, Advisor: 4. Simulation Advancement (Optional)
+    Agent->>Advisor: advance_ride()
+    Advisor->>Advisor: Increment CURRENT_INDEX by 200
+    Advisor-->>Agent: "Simulation advanced to new index"
 ```
 
 ---
