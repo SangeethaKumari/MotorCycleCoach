@@ -20,6 +20,7 @@ from google.genai import types
 # Import our root agent
 from coachagent.agent import root_agent
 from coachagent.rag import get_last_sources
+# pyrefly: ignore [missing-import]
 from coachagent.classifier import classify_query
 
 load_dotenv()
@@ -304,11 +305,12 @@ if __name__ == "__main__":
     import uvicorn
 
     ENV = os.getenv("APP_ENV", "dev")
+    port = int(os.getenv("PORT", "8000"))
 
     if ENV == "dev":
         logger.info("🔧 Running in DEV mode — hot reload enabled")
         # Note: using "coachagent.main:app" because of the package structure
-        uvicorn.run("coachagent.main:app", host="0.0.0.0", port=8000, reload=True, workers=1, log_level="debug")
+        uvicorn.run("coachagent.main:app", host="0.0.0.0", port=port, reload=True, workers=1, log_level="debug")
     else:
         logger.info("🚀 Running in PROD mode")
-        uvicorn.run("coachagent.main:app", host="0.0.0.0", port=8000, reload=False, workers=4, log_level="warning")
+        uvicorn.run("coachagent.main:app", host="0.0.0.0", port=port, reload=False, workers=4, log_level="warning")

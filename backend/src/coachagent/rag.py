@@ -29,13 +29,22 @@ def get_last_sources():
 
 def get_vector_store():
     qdrant_url = os.getenv("QDRANT_URL")
+    qdrant_host = os.getenv("QDRANT_HOST")
+    qdrant_port = os.getenv("QDRANT_PORT")
     qdrant_api_key = os.getenv("QDRANT_API_KEY")
+    if qdrant_api_key:
+        qdrant_api_key = qdrant_api_key.strip()
     collection_name = os.getenv("COLLECTION_NAME", "motorcycle_dmv_handbook")
     
     embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
     
     if qdrant_url and (qdrant_url.startswith("http") or ":" in qdrant_url):
         client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
+    elif qdrant_host and (qdrant_host.startswith("http://") or qdrant_host.startswith("https://")):
+        client = QdrantClient(url=qdrant_host, api_key=qdrant_api_key)
+    elif qdrant_host:
+        port = int(qdrant_port) if qdrant_port else 6333
+        client = QdrantClient(host=qdrant_host, port=port, api_key=qdrant_api_key)
     else:
         client = QdrantClient(path="./qdrant_db")
         

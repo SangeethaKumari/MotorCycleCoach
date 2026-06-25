@@ -4,8 +4,8 @@ import remarkGfm from "remark-gfm";
 import "./index.css";
 import { CORNERING_STEPS, CLUTCH_MISTAKE_STEPS, THROTTLE_STEPS, SPEED_ANALYSIS_STEPS, FOOT_PLACEMENT_STEPS, LANE_PLACEMENT_STEPS, ANATOMY_PARTS_STEPS } from "./VideoMetadata";
 
-const API_BASE = "http://localhost:8000";
-const AUTH_TOKEN = "your-secret-token";
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
+const AUTH_TOKEN = import.meta.env.VITE_AUTH_TOKEN || "your-secret-token";
 
 const CURRICULUM = [
     { name: "License & Legal Requirements", icon: "🪪" },

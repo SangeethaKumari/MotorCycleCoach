@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: motorcycle-coach-backend
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: PYTHONPATH=backend/src uvicorn coachagent.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: QDRANT_HOST
+        value: https://a1e7f68f-fb39-4369-9ffa-1d6e614c60c2.us-west-1-0.aws.cloud.qdrant.io
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: COLLECTION_NAME
+        value: motorcyclecoach
+      - key: API_SECRET_TOKEN
+        sync: false
