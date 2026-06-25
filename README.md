@@ -62,13 +62,30 @@ curl -X POST http://localhost:8000/chat \
 ```
 
 ### Call a Tool (Proxy)
-Directly call a tool exposed via the MCP server.
+Directly call a tool exposed via the MCP server using the generic proxy endpoint:
 
+#### 1. Calculate Stopping Distance
 ```bash
-curl -X POST http://localhost:8000/tools/add \
+curl -X POST http://localhost:8000/tools/call \
      -H "Authorization: Bearer your-secret-token" \
      -H "Content-Type: application/json" \
-     -d '{"a": 10, "b": 20}'
+     -d '{"name": "calculate_stopping_distance", "arguments": {"speed_mph": 45, "road_condition": "wet"}}'
+```
+
+#### 2. Verify Helmet Safety Rating
+```bash
+curl -X POST http://localhost:8000/tools/call \
+     -H "Authorization: Bearer your-secret-token" \
+     -H "Content-Type: application/json" \
+     -d '{"name": "check_helmet_certification", "arguments": {"rating_agency": "SNELL", "manufacturing_year": 2023}}'
+```
+
+#### 3. Retrieve MSF T-CLOCS Pre-Ride Inspection Checklist
+```bash
+curl -X POST http://localhost:8000/tools/call \
+     -H "Authorization: Bearer your-secret-token" \
+     -H "Content-Type: application/json" \
+     -d '{"name": "get_t_clocs_checklist", "arguments": {"category": "controls"}}'
 ```
 
 ## Development

@@ -100,13 +100,9 @@ class TranscribeRequest(BaseModel):
     user_id: str = "default_user"
     session_id: str = "default_session"
 
-class AddRequest(BaseModel):
-    a: float
-    b: float
-
-class AddResponse(BaseModel):
-    result: float
-    operation: str
+class MCPToolCallRequest(BaseModel):
+    name: str
+    arguments: dict
 
 # ── Routes ────────────────────────────────────────────
 @app.get("/health")
@@ -252,27 +248,23 @@ async def transcribe(request: TranscribeRequest, token: str = Depends(verify_tok
         logger.error(f"Transcription Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/tools/add", response_model=AddResponse)
-async def call_add_tool(
-    payload: AddRequest,
+@app.post("/tools/call")
+async def proxy_mcp_tool(
+    payload: MCPToolCallRequest,
     token: str = Depends(verify_token)
 ):
     try:
         async with httpx.AsyncClient() as client:
-            # We assume the MCP server is using HTTP or SSE and exposed at /mcp or similar.
-            # However, for a simple proxy test, we'll try to follow the likely FastMCP structure.
             mcp_rpc_payload = {
                 "jsonrpc": "2.0",
                 "method": "tools/call",
                 "params": {
-                    "name": "add_numbers",
-                    "arguments": {"a": payload.a, "b": payload.b}
+                    "name": payload.name,
+                    "arguments": payload.arguments
                 },
                 "id": 1
             }
-            # Note: The exact path depends on how FastMCP is running. 
-            # If it's pure SSE, it might be different. 
-            # For now, we'll point to /mcp which is the default for HTTP transport.
+            # Point to /mcp which is the default endpoint for FastMCP HTTP/SSE transport
             response = await client.post(
                 f"{MCP_SERVER_URL}/mcp",
                 json=mcp_rpc_payload,
@@ -280,26 +272,23 @@ async def call_add_tool(
             )
             
             if response.status_code == 404:
-                # Try fallback or just report 404
-                raise HTTPException(status_code=503, detail="MCP tool endpoint /mcp not found. Check transport/path.")
+                raise HTTPException(status_code=503, detail="MCP tool endpoint /mcp not found. Check server status.")
                 
             response.raise_for_status()
             rpc_result = response.json()
             
-            # Extract the result from JSON-RPC response
             if "error" in rpc_result:
                 raise HTTPException(status_code=400, detail=str(rpc_result["error"]))
             
-            # FastMCP tools usually return a list of content items.
-            # We expect a dict with "result" and "operation".
             content = rpc_result.get("result", {}).get("content", [])
             if content and isinstance(content, list) and len(content) > 0:
-                # Try to parse the text as JSON or just return it
+                # FastMCP wraps the tool return value inside a text block.
+                # If it's valid JSON, parse and return it; otherwise return raw text.
                 import json
                 try:
                     return json.loads(content[0].get("text", "{}"))
                 except:
-                    return {"result": 0.0, "operation": content[0].get("text", "unknown")}
+                    return {"result": content[0].get("text", "")}
             
             return rpc_result.get("result", {})
 

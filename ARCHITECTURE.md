@@ -26,7 +26,7 @@ graph TD
 
     Agent -- "RAG search_handbook()" --> Qdrant
     Agent -- "analyze_telemetry()" --> Telemetry
-    Agent -- "add_numbers()" --> MCPServer
+    Agent -- "check_helmet_certification()" --> MCPServer
     Agent -- "Gemini Model Call" --> Gemini
 
     Telemetry -- "Reads Ride Physics" --> Dataset
@@ -74,6 +74,7 @@ graph TD
     Gemini[Gemini LLM Agent]:::default
     Qdrant[(Qdrant Vector DB)]:::storage
     LocalDocs[(Local Datasets & Handbooks)]:::storage
+    MCPServer[FastMCP Tool Server]:::default
 
     React -- "1: POST /chat {prompt}" --> FastAPI
     FastAPI -- "2: Process Query" --> Gemini
@@ -85,6 +86,9 @@ graph TD
 
     FastAPI -- "7: Read Raw Data" --> LocalDocs
     LocalDocs -- "8: Sensor CSV Rows / PDF text" --> FastAPI
+
+    Gemini -- "9: Call check_helmet_certification()" --> MCPServer
+    MCPServer -- "10: Helmet validation status" --> Gemini
 ```
 
 ---
@@ -217,6 +221,33 @@ sequenceDiagram
     Agent->>Advisor: advance_ride()
     Advisor->>Advisor: Increment CURRENT_INDEX by 200
     Advisor-->>Agent: "Simulation advanced to new index"
+```
+
+### 5. Helmet Safety Verification Flow
+
+This sequence flow describes how the agent dynamically invokes the helmet certification tool to check safety status when the user asks a question about their specific gear (e.g., *"I have a SNELL certified helmet from 2018. Is it safe to use?"*):
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend as React UI (App.jsx)
+    participant Backend as FastAPI (main.py)
+    participant Agent as ADK Agent (agent.py)
+    participant Tool as Helmet Check Tool (server.py)
+
+    User->>Frontend: Types "I have a SNELL certified helmet from 2018. Is it safe?"
+    Frontend->>Backend: POST /chat {prompt: "..."}
+    Backend->>Agent: runner.run(agent, prompt)
+    Agent->>Agent: Reasoning (Recognizes helmet safety check intent)
+    Agent->>Tool: check_helmet_certification(rating_agency="SNELL", manufacturing_year=2018)
+    Note over Tool: Calculate age (2026 - 2018 = 8 years)
+    Note over Tool: Identify safety status (8 >= 5 years -> EXPIRED)
+    Tool-->>Agent: Returns {"status": "EXPIRED", "helmet_age_years": 8, "recommendation": "..."}
+    Agent->>Agent: Synthesize explanation on EPS degradation + add [QUIZ] block
+    Agent-->>Backend: Final response string with quiz
+    Backend->>Backend: Extract [QUIZ] block from text
+    Backend-->>Frontend: JSON response { response, quiz, sources }
+    Frontend-->>User: Render expired helmet warning & interactive quiz card
 ```
 
 ---
