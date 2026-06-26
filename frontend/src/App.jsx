@@ -383,7 +383,7 @@ function VideoCoach({ type }) {
         label = "THROTTLE SMOOTHNESS";
     } else if (lessonType === "speed") {
         steps = SPEED_ANALYSIS_STEPS;
-        url = "/videos/realvideo_kids.mp4";
+        url = "/videos/lane_placement.mp4"; // Fallback to lane placement to keep it working
         label = "PACE CONSISTENCY";
     } else if (lessonType === "footwork") {
         steps = FOOT_PLACEMENT_STEPS;
@@ -399,7 +399,7 @@ function VideoCoach({ type }) {
         label = "PART IDENTIFICATION";
     } else {
         steps = CORNERING_STEPS;
-        url = "/videos/cornering_mastery.mp4";
+        url = "/videos/throttle_technique.mp4"; // Fallback to throttle technique to avoid 80MB file issues
         label = "LEAN FORCE";
     }
     
