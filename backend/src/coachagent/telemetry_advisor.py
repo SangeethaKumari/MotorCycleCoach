@@ -12,9 +12,16 @@ class TelemetryAdvisor:
         self._load_data()
 
     def _load_data(self):
+        # Resolve backup paths if the directory structure shifts (e.g. running from backend/ or on Render)
+        if not os.path.exists(self.csv_path):
+            for path in ["../data/reckless_rider_dataset.csv", "../../data/reckless_rider_dataset.csv", "backend/data/reckless_rider_dataset.csv"]:
+                if os.path.exists(path):
+                    self.csv_path = path
+                    break
+
         if os.path.exists(self.csv_path):
             self.df = pd.read_csv(self.csv_path)
-            print(f"✅ TelemetryAdvisor loaded {len(self.df)} rows.")
+            print(f"✅ TelemetryAdvisor loaded {len(self.df)} rows from {self.csv_path}.")
         else:
             print(f"❌ TelemetryAdvisor: File not found at {self.csv_path}")
 
