@@ -73,7 +73,7 @@ class TelemetryAdvisor:
             "is_dangerous": bool(is_braking_mid_corner or label_code in ['DA', 'AA']),
             "alerts": [],
             "history": history,
-            "data_source": "Kaggle Motorcycle Dataset"
+            "data_source": "Simulated Practice Ride"
         }
         
         if is_braking_mid_corner:

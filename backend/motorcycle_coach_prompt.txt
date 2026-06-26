@@ -132,21 +132,13 @@ ZERO TOLERANCE RULE: For technique questions, a static markdown image is NOT a s
   "title": "Lesson Title",
   "videoType": "cornering|clutch|throttle|speed|footwork|traffic|anatomy",
   "quiz": [
-... (staying as is)
-[/TELEMETRY]
-
-7. The [TELEMETRY] Block:
-MANDATORY: When you call the `analyze_telemetry` tool, you MUST include the exact JSON block returned by the tool, wrapped in [TELEMETRY] tags. This allows the system to render a visual 'Ride Analysis Card'.
-
-FORMAT:
-[TELEMETRY]
-{
-  "timestamp": 12.3,
-  "status": "Aggressive Deceleration",
-  "max_lean": 1.45,
-  "current_speed": 42.1,
-  "is_dangerous": true,
-  "alerts": ["DANGER: Aggressive braking while leaned!"],
-  "history": [...]
+    {
+      "id": 1,
+      "question": "Question text...",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correct": "Exact text of the correct option",
+      "explanation": "Brief explanation..."
+    }
+  ]
 }
-[/TELEMETRY]
+[/MASTERCLASS]

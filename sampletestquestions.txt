@@ -1,0 +1,8 @@
+Mistakes/Alerts: "Did I make any mistakes during my last slowdown?" or "Check my recent sensors for any warnings."
+Specific Dynamics: "How is my lean angle looking?" or "Am I leaning too hard on turns?"
+General Assessment: "Am I riding safely right now?" or "Can you analyze my recent telemetry data?"
+
+"Simulate the next part of the ride."
+"Advance my ride simulation."
+"Skip forward in the ride log."
+

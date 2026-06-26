@@ -247,7 +247,7 @@ export default function App() {
                                         <div className="telemetry-card animate-slide-up">
                                             <div className="card-header">
                                                 <h3>Performance Analysis</h3>
-                                                <span className="source-badge">KAGGLE DATASET</span>
+                                                <span className="source-badge">SIMULATED RIDE</span>
                                             </div>
                                             <div className="telemetry-grid">
                                                 <TelemetryViz data={msg.telemetry} />
@@ -493,7 +493,7 @@ function TelemetryViz({ data }) {
         <div className={`telemetry-card ${data.is_dangerous ? 'danger-pulse' : ''}`}>
             <div className="telemetry-header">
                 <span>📊 RIDE DYNAMICS ANALYSIS</span>
-                <span className="source-tag">KAGGLE DATASET</span>
+                <span className="source-tag">SIMULATED RIDE</span>
                 <span className="timestamp">T+{data.timestamp || 0}s</span>
             </div>
             
@@ -514,7 +514,7 @@ function TelemetryViz({ data }) {
             </div>
 
             <div className="sparkline-container">
-                <div className="sparkline-label">PHYSICS TIMELINE (KAGGLE DATA)</div>
+                <div className="sparkline-label">PHYSICS TIMELINE (SIMULATED RIDE)</div>
                 <div className="sparkline">
                     {(data.history || []).map((h, i) => {
                         const s = Number(h.speed) || 0;
